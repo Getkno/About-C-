@@ -1,0 +1,54 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using Ivi.Visa.Interop;
+using System.Threading;
+using System.IO.Ports;
+
+
+namespace QSFP28_50G_ER4_lite_TCB_Setting
+{
+    class GPIB
+    {
+        Ivi.Visa.Interop.ResourceManager rMgr = new Ivi.Visa.Interop.ResourceManager();
+        FormattedIO488 src = new FormattedIO488();
+
+
+        public void GPIB_Write(string Path,string Code )
+        {
+            src.IO = (IMessage)rMgr.Open(Path, AccessMode.NO_LOCK, 2000, "");
+            try
+            {
+                src.IO.Clear();
+                src.WriteString(Code);
+                //Thread.Sleep(100);
+                //textBox1.AppendText(src.ReadString());
+            }
+            catch { Message Box.Show("Error!"); }
+            src.IO.Close();
+        }
+
+        public string GPIB_Write_Read(string Path, string Code,string Codeback)
+        {
+            src.IO = (IMessage)rMgr.Open(Path, AccessMode.NO_LOCK, 2000, "");
+            try
+            {
+                src.IO.Clear();
+                src.WriteString(Code);
+                Thread.Sleep(100);
+                return Codeback = src.ReadString();
+            }
+            catch {Message Box.Show("Error!"); }
+            src.IO.Close();
+            return Codeback="";
+        }
+
+
+    }
+}
