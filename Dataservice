@@ -1,0 +1,126 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using MyTools;
+
+namespace WindowsFormsApplication7
+{
+    class DataService
+    {
+        public class DataService
+        {
+            static string connString245;
+            static string connString4;
+            static string ConnString245
+            {
+                get
+                {
+                    if (IntPtr.Size == 4)
+                    {
+                        connString245 = "Driver={PostgreSQL UNICODE};server=172.19.92.178;port=5432;database=Development DB;uid=postgres;pwd=postgres";
+
+                    }
+                    else
+                    {
+                        connString245 = "Driver={PostgreSQL UNICODE(x64)};server=172.19.92.178;port=5432;database=Development DB;uid=postgres;pwd=postgres";
+                    }
+                    return connString245;
+                }
+            }
+            static string ConnString4
+            {
+                get
+                {
+                    if (IntPtr.Size == 4)
+                    {
+                        connString4 = "Driver={PostgreSQL UNICODE};server=172.19.92.178;port=5432;database=Development DB;uid=postgres;pwd=postgres";
+
+                    }
+                    else
+                    {
+                        connString4 = "Driver={PostgreSQL UNICODE};server=172.19.92.178;port=5432;database=Development DB;uid=postgres;pwd=postgres";
+                    }
+                    return connString4;
+                }
+            }
+
+
+
+            static DBHelp db245;
+            static DBHelp db4;
+
+            public DataService()
+            {
+                db245 = new DBHelp(ConnString245);
+                db4 = new DBHelp(ConnString4);
+            }
+            public bool AddNewList(List<List<string>> NewData, bool a, char b)
+            {
+                List<string> m = new List<string>();
+                foreach (var proj in NewData)
+                {
+                    m.Add(string.Format("insert into kaifa_wl values('{0}','{1}')", a.ToString(), b.ToString()));
+
+                }
+
+                return db245.ExecuteNonQuery(m, System.Data.CommandType.Text);
+            }
+            public bool AddNewRecord(Dictionary<string, List<List<string>>> NewData, DateTime sDate, DateTime eDate)
+            {
+                List<string> sqls = new List<string>();
+
+                foreach (var proj in NewData)
+                {
+                    sqls.Add(string.Format("insert into kaifa_wl values('{0}','{1}','{2}')", proj.Key, sDate.ToShortDateString(), eDate.ToShortDateString()));
+                    for (int i = 1; i < proj.Value.Count; i++)
+                    {
+                        sqls.Add(string.Format("insert into test_items values('{0}','{1}')", proj.Key, proj.Value[i][0]));
+                        for (int j = 1; j < proj.Value[i].Count; j++)
+                        {
+                            if (proj.Value[i][j] != "")
+                            {
+                                sqls.Add(string.Format("insert into test_experi values('{0}','{1}','{2}','{3}')", proj.Key, proj.Value[i][0], proj.Value[i][j], proj.Value[0][j]));
+                            }
+                        }
+
+                    }
+                }
+
+                return db245.ExecuteNonQuery(sqls, System.Data.CommandType.Text);
+            }
+            internal DataTable GetProjs()
+            {
+                string sql = "select * from  kaifa_wl ";
+                return db245.ExecuteDataTable(sql, CommandType.Text);
+
+            }
+            public DataTable GetProjsDetail()
+            {
+                string sql = "select * from  kaifa_wl as r " +
+                             "left join  test_items as i on r.proj_name = i.proj_name " +
+                             "left join (select proj_name,item_name,array_agg(experi_times) from ( select * from test_experi order by experi_date) as e group by proj_name,item_name) as e on e.proj_name=r.proj_name and e.item_name=i.item_name order by i.item_name";
+                return db245.ExecuteDataTable(sql, CommandType.Text);
+            }
+            public DataTable Serach(string llcode, string mpn, string type, string attribute)
+            {
+                //string sql = "select * from test where code like '%" + llcode + "%' and mpn like '%" + mpn + "%' and type like '%" + type + "%'and attribute like '%" + attribute + "%'";
+                string sql = "select * from kaifa_wl where code like '%" + llcode + "%' and mpn like '%" + mpn + "%'";
+                return db245.ExecuteDataTable(sql, CommandType.Text);
+            }
+            public DataTable Update(string code, string number)
+            {
+
+                string sql = "update kaifa_wl set number='" + number + "' where code='" + code + "' ";
+                return db245.ExecuteDataTable(sql, CommandType.Text);
+            }
+        }
+
+       
+    }
+}
