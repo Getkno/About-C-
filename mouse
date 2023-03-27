@@ -1,0 +1,73 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Runtime.InteropServices;
+using System.Drawing;
+
+namespace Mouseevent
+{
+    class mouse
+    {
+        [DllImport("user32.dll")]
+        private static extern int SetCursorPos(int x, int y);
+        /// <summary>
+        /// 移动鼠标到指定的坐标点
+        /// </summary>
+        public void MoveMouseToPoint(Point p)
+        {
+            SetCursorPos(p.X, p.Y);
+        }
+        /// <summary>
+        /// 设置鼠标的移动范围
+        /// </summary>
+        public void SetMouseRectangle(Rectangle rectangle)
+        {
+            System.Windows.Forms.Cursor.Clip = rectangle;
+        }
+        /// <summary>
+        /// 设置鼠标位于屏幕中心
+        /// </summary>
+        public void SetMouseAtCenterScreen()
+        {
+            //当前屏幕的宽高
+            int winHeight = System.Windows.Forms.Screen.PrimaryScreen.WorkingArea.Height;
+            int winWidth = System.Windows.Forms.Screen.PrimaryScreen.WorkingArea.Width;
+            //设置鼠标的x，y位置
+            loginx = winWidth / 2;
+            loginy = winHeight / 2;
+            Point centerP = new Point(loginx, loginy);
+            //移动鼠标
+            MoveMouseToPoint(centerP);
+        }
+        //点击事件
+        [DllImport("User32")]
+        //下面这一行对应着下面的点击事件
+        //    public extern static void mouse_event(int dwFlags, int dx, int dy, int dwData, IntPtr dwExtraInfo);
+        public extern static void mouse_event(int dwFlags, int dx, int dy, int cButtons, int dwExtraInfo);
+        public const int MOUSEEVENTF_LEFTDOWN = 0x2;
+        public const int MOUSEEVENTF_LEFTUP = 0x4;
+        public enum MouseEventFlags
+        {
+            Move = 0x0001, //移动鼠标
+            LeftDown = 0x0002,//模拟鼠标左键按下
+            LeftUp = 0x0004,//模拟鼠标左键抬起
+            RightDown = 0x0008,//鼠标右键按下
+            RightUp = 0x0010,//鼠标右键抬起
+            MiddleDown = 0x0020,//鼠标中键按下
+            MiddleUp = 0x0040,//中键抬起
+            Wheel = 0x0800,
+            Absolute = 0x8000//标示是否采用绝对坐标
+        }
+        //鼠标将要到的x，y位置
+        public static int loginx, loginy;
+        public void mouse_clock(int dwFlags,int x,int y)
+        {
+
+            Point centerP = new Point(x, y);
+            MoveMouseToPoint(centerP);
+            mouse_event(dwFlags, 0, 0, 0, 0);
+        }
+    }
+}
