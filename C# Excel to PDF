@@ -1,0 +1,62 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace To_PDF
+{
+    class ExcelToPdf
+    {
+        public  bool toPdf(string input, string output)
+        {
+            Microsoft.Office.Interop.Excel.Application app = null;
+            Microsoft.Office.Interop.Excel.Workbooks wbs = null;
+            Microsoft.Office.Interop.Excel.Workbook wb = null;
+            object lobjMissing = System.Reflection.Missing.Value;
+            try
+            {
+                app = new Microsoft.Office.Interop.Excel.Application();
+                app.Visible = false;
+                wbs = app.Workbooks;
+                wb = wbs.Open(input, true, lobjMissing, lobjMissing, lobjMissing, true, lobjMissing, lobjMissing, lobjMissing, lobjMissing, lobjMissing, false, lobjMissing, lobjMissing);
+                wb.ExportAsFixedFormat(Microsoft.Office.Interop.Excel.XlFixedFormatType.xlTypePDF, output, Microsoft.Office.Interop.Excel.XlFixedFormatQuality.xlQualityStandard, Type.Missing, false, Type.Missing, Type.Missing, true, Type.Missing);
+                wb.Close();
+                return true;
+            }
+            catch
+            {
+
+                KillProcess();
+
+                return false;
+            }
+        }//excel转化为PDF档
+
+        public static void KillProcess()
+        {
+            //获得进程对象，以用来操作
+            System.Diagnostics.Process myproc = new System.Diagnostics.Process();
+            //得到所有打开的进程
+            try
+            {
+                Process[] pros = Process.GetProcesses();
+                //获得需要杀死的进程名
+                foreach (Process thisproc in pros)
+                {
+                    if (thisproc.ProcessName == "EXCEL")
+                        //立即杀死进程
+                        thisproc.Kill();
+                    if (thisproc.ProcessName == "Adobe Acrobat Reader")
+                        //立即杀死进程
+                        thisproc.Kill();
+                }
+            }
+            catch (Exception Exc)
+            {
+                throw new Exception("", Exc);
+            }
+        }
+    }
+}
