@@ -1,0 +1,87 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.Office.Core;
+using Microsoft.Office.Interop.Excel;
+using System.Windows.Forms;
+using System.IO;
+
+namespace excel基本操作
+{
+    class Excel
+    {
+        public string Excel_Read(string Path,string Sheet, int y,int x)
+        {
+            string s = "";
+            if (File.Exists(Path))
+            {
+            Microsoft.Office.Interop.Excel.Application exApp = new Microsoft.Office.Interop.Excel.Application();//excel程序对象
+            Workbooks workbooks = exApp.Workbooks;//excel工作簿集合对象
+            
+            _Workbook _wkb = workbooks.Open(Path, 0, false, 5, "", "", true, Microsoft.Office.Interop.Excel.XlPlatform.xlWindows, "", true, false, 0, true, false, false);//excel单个工作簿对象
+            Sheets sheets = _wkb.Sheets;//excel sheet表集合对象
+            
+            try
+            {
+                _Worksheet _wsh = (_Worksheet)sheets.get_Item(Sheet);//excel 单个sheet的对象
+                 s = ((Range)_wsh.Cells[y, x]).Text;//获取[y,x]的值
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("这个Sheet不存在，请确认！");
+                
+            }
+            exApp.Quit();
+            return s;
+            }
+            else
+            {
+                MessageBox.Show("这个Excel不存在，请确认!");
+                return s;
+            }
+        }
+        public void Excel_Write(string Path, string Sheet, int y, int x, string Data)
+        {
+            if (File.Exists(Path))
+            {
+            Microsoft.Office.Interop.Excel.Application exApp = new Microsoft.Office.Interop.Excel.Application();//excel程序对象
+            Workbooks workbooks = exApp.Workbooks;//excel工作簿集合对象
+            _Workbook _wkb = workbooks.Open(Path, 0, false, 5, "", "", true, Microsoft.Office.Interop.Excel.XlPlatform.xlWindows, "", true, false, 0, true, false, false);//excel单个工作簿对象
+            Sheets sheets = _wkb.Sheets;//excel sheet表集合对象
+            try
+            {
+                _Worksheet _wsh = (_Worksheet)sheets.get_Item(Sheet);//excel 单个sheet的对象
+                _wsh.Cells[y, x] = Data;//写入B2的值
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("这个Sheet不存在，请确认！");
+            }
+            
+            _wkb.Save();//保存excel文档
+            exApp.Quit();
+            }
+            else
+            {
+                MessageBox.Show("这个Excel不存在，请确认!");
+            }
+        }
+        public void Excel_Create(string Path)
+        {
+            if (File.Exists(Path))
+            {
+                MessageBox.Show("需要创建的Excel已经存在！");
+            }
+            else
+            {
+                Microsoft.Office.Interop.Excel._Application app = new Microsoft.Office.Interop.Excel.Application();
+                app.Visible =false;
+                Workbook aa = app.Workbooks.Add();
+                aa.SaveAs(Path, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, XlSaveAsAccessMode.xlNoChange, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
+                app.Quit();
+            }
+       }
+    }
+}
