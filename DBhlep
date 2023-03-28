@@ -1,0 +1,134 @@
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.Odbc;
+using System.Linq;
+using System.Text;
+
+
+class DBHelp
+{
+    //连接数据库字符串
+    private string connStr;
+    private OdbcConnection conn;
+    /// <summary>
+    /// 构造函数
+    /// </summary>
+    /// <param name="str"></param>
+    public DBHelp(string str)
+    {
+        connStr = str;
+    }
+    /// <summary>
+    /// 返回conn对象
+    /// </summary>
+    public OdbcConnection Conn
+    {
+        get
+        {
+            if (conn == null)
+            {
+                conn = new OdbcConnection(connStr);
+                conn.Open();
+            }
+            else if (conn.State == ConnectionState.Broken)
+            {
+                conn.Close();
+                conn.Open();
+            }
+            else if (conn.State == ConnectionState.Closed)
+            {
+                conn.Open();
+            }
+            return conn;
+        }
+    }
+    /// <summary>
+    /// 返回单个值
+    /// </summary>
+    /// <param name="commandText"></param>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    public string ExScalar(string commandText, params OdbcParameter[] paras)
+    {
+        OdbcCommand cmd = new OdbcCommand();
+        cmd.CommandText = commandText;
+        cmd.CommandType = CommandType.Text;
+        cmd.Connection = Conn;
+        cmd.Parameters.AddRange(paras);
+        object obj = cmd.ExecuteScalar();
+        string str = string.Empty;
+        if (obj != null)
+        {
+            str = obj.ToString();
+        }
+        cmd.Connection.Close();
+        return str;
+    }
+    /// <summary>
+    /// 返回DataTable
+    /// </summary>
+    /// <param name="commandText"></param>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    public DataTable ExTable(string commandText, params OdbcParameter[] paras)
+    {
+        OdbcCommand cmd = new OdbcCommand();
+        cmd.CommandText = commandText;
+        cmd.CommandType = CommandType.Text;
+        cmd.Connection = Conn;
+        cmd.Parameters.AddRange(paras);
+        OdbcDataAdapter dr = new OdbcDataAdapter(cmd);
+        DataTable dt = new DataTable();
+        dr.Fill(dt);
+        cmd.Connection.Close();
+        cmd.Dispose();
+        return dt;
+    }
+    /// <summary>
+    /// 返回受影响的行
+    /// </summary>
+    /// <param name="commandText"></param>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    public int ExNonQuery(string commandText, params OdbcParameter[] paras)
+    {
+        OdbcCommand cmd = new OdbcCommand();
+        cmd.CommandText = commandText;
+        cmd.CommandType = CommandType.Text;
+        cmd.Connection = Conn;
+        cmd.Parameters.AddRange(paras);
+        int result = cmd.ExecuteNonQuery();
+        cmd.Connection.Close();
+        return result;
+    }
+    public bool ExNonQuery(List<KeyValuePair<string,OdbcParameter[]>> commands)
+    {
+        OdbcCommand cmd = new OdbcCommand();
+        cmd.Connection = Conn;
+        cmd.CommandType = CommandType.Text;
+        OdbcTransaction tran = conn.BeginTransaction();
+        try
+        {
+            cmd.Transaction = tran;
+            foreach (var command in commands)
+            {
+                cmd.CommandText = command.Key;
+                cmd.Parameters.Clear();
+                cmd.Parameters.AddRange(command.Value);
+                cmd.ExecuteNonQuery();
+            }
+            tran.Commit();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            tran.Rollback();
+            return false;
+        }
+        finally
+        {
+            cmd.Connection.Close();
+        }
+    }
+}
