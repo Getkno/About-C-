@@ -1,0 +1,21 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace csv文件保存
+{
+    class CSV_Save
+    {
+        public void Csv_Save(string Path,string Data)
+        {
+            string fileName = Path;
+            StreamWriter fileWriter = new StreamWriter(fileName, true, Encoding.ASCII);
+            fileWriter.Write(Data);
+            fileWriter.Flush();
+            fileWriter.Close();
+        }
+    }
+}
