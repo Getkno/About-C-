@@ -1,0 +1,47 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using System.Data.Odbc;
+using System.Data;
+
+namespace WindowsFormsApplication19
+{
+    
+
+
+    public  class dbhelp
+    {
+         string  MyConString = "Driver={PostgreSQL UNICODE};server=172.19.92.178;port=5432;database=Development DB;uid=postgres;pwd=postgres;CharSet=utf8";
+
+        public  DataTable GetDatatableFromDB(string sql)
+        {
+            DataTable dt = new DataTable();
+            OdbcConnection conn = new OdbcConnection(MyConString);
+            OdbcCommand cmd = new OdbcCommand(sql, conn);
+            OdbcDataReader dr;
+            try
+            {
+                conn.Open();
+                dr = cmd.ExecuteReader(CommandBehavior.CloseConnection);
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+            if (dr.HasRows)
+            {
+                dt.Rows.Clear();
+                dt.Load(dr);
+                dr.Close();
+            }
+            return dt;
+        }
+    }
+
+}
+
