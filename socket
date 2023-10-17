@@ -31,7 +31,7 @@ namespace Client
             //连接
             socket.Connect(point);
 
-            ShowMsg("连接成功");
+             txtLog.Text = "连接成功";
             //为了避免窗体卡死 创建一个线程来不停的接收服务器发送过来的消息
             Thread th = new Thread(ReciveMsg);
             th.IsBackground = true;
@@ -53,45 +53,58 @@ namespace Client
 
                     int r= socket.Receive(buffer);
 
-                    byte b = buffer[0];
+                    //byte b = buffer[0];
                     //发送的文字
-                    if (b == 0)
-                    {
-                        string str = Encoding.UTF8.GetString(buffer, 1, r - 1);
-                        ShowMsg(str);
-                    }
+                    //if (b == 0)
+                    //{
+                        string str = Encoding.ASCII.GetString(buffer, 1, r - 1);
+                        Action2<string> a = new Action2<string>(Action2Test);
+                        Invoke(a, str);
+                        //ShowMsg(str);
+                    //}
                     //发送的文件
-                    else if (b == 1)
-                    {
-                        SaveFileDialog sfd = new SaveFileDialog();
-                        sfd.Title = "请选择要保存的文件的路径";
-                        sfd.Filter = "所有文件|*.*";
-                        sfd.InitialDirectory = @"C:\Users\SpringRain\Desktop";
-                        sfd.ShowDialog(this);
-                        string path = sfd.FileName;
-                        //把发送过来的文件保存在这个路径下
-                        using (FileStream fsWrite = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write))
-                        {
-                            fsWrite.Write(buffer, 1, r - 1);
-                        }
-                        MessageBox.Show("保存成功");
-                    }
-                    //发送的震动
-                    else if (b == 2)
-                    {
-                        ZD();
-                    }
+                    //else if (b == 1)
+                    //{
+                    //    SaveFileDialog sfd = new SaveFileDialog();
+                    //    sfd.Title = "请选择要保存的文件的路径";
+                    //    sfd.Filter = "所有文件|*.*";
+                    //    sfd.InitialDirectory = @"C:\Users\SpringRain\Desktop";
+                    //    sfd.ShowDialog(this);
+                    //    string path = sfd.FileName;
+                    //    //把发送过来的文件保存在这个路径下
+                    //    using (FileStream fsWrite = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write))
+                    //    {
+                    //        fsWrite.Write(buffer, 1, r - 1);
+                    //    }
+                    //    MessageBox.Show("保存成功");
+                    //}
+                    ////发送的震动
+                    //else if (b == 2)
+                    //{
+                    //    ZD();
+                    //}
                 }
-                catch { }
+               
+                catch (Exception)
+                {
+                    
+                    throw;
+                }
             }
 
         }
-
-
+        public delegate void Action2<in T>(T t);
+        public void Action2Test(string str)
+        {
+            txtLog.Text = txtLog.Text+"\r\n"+ str;
+        }
 
         void ShowMsg(string str)
         {
-            txtLog.AppendText(str + "\r\n");
+            Action<string> action = (data) =>
+                {
+                    txtLog.Text = str;
+                };
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -117,10 +130,12 @@ namespace Client
         /// <param name="e"></param>
         private void btnSend_Click(object sender, EventArgs e)
         {
-            string msg = txtMsg.Text.Trim();
-            byte[] buffer = Encoding.UTF8.GetBytes(msg);
+            string msg = txtMsg.Text.ToString ();
+            msg = msg + "\n";
+            byte[] buffer = Encoding.ASCII.GetBytes(msg);
             socket.Send(buffer);
             Thread.Sleep(500);
+
             //Thread th = new Thread(ReciveMsg);
             //th.IsBackground = true;
             //th.Start();
